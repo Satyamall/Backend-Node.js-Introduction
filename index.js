@@ -1,0 +1,82 @@
+
+// var sum=require("./sum.js");
+
+// console.log(sum(3,2));
+
+
+const http=require('http');
+
+const {getAllUsers,getUser, addUser}=require('./app/api/users/')
+
+const server=http.createServer((req,res)=>{
+    try{
+        console.log(req.method,req.url);
+        const [url,query]=req.url.split("?");
+        if(url=== '/users'){
+            if(req.method==="GET")
+            {
+                const q=new URLSearchParams(`?${query}`);
+                const page=q.get('page') ?? 1;
+                res.writeHead(200,{'Content-Type': 'application/json'});
+                res.end(JSON.stringify(getAllUsers(page)));
+            }
+            else if(req.method==="POST"){
+               console.log(url,query)
+                const q=new URLSearchParams(`?${query}`);
+                // const [name,value]=query.split("=");
+                // console.log(name,value);
+                const name=q.get('name');
+               addUser(name);
+               console.log(q.get("name"))
+               res.writeHead(200,{'Content-Type': 'application/json'});
+                res.end(JSON.stringify(getAllUsers()));
+            }
+        }
+        else if(url.startsWith('/users/')){
+            const index=Number(req.url.split('/')[2])
+            res.writeHead(200,{'Content-Type': 'application/json'});
+            res.end(JSON.stringify(getUser(index)));
+        }
+        else{
+            throw new Error('Did not understand query')
+        }
+    }
+    catch(err){
+        res.writeHead(500,{'Content-Type': 'application/json'})
+    //write to response header
+    //200 status code
+    // content type is application / json
+    res.end(JSON.stringify({
+        data: 'Error '+ err.message
+    }))
+    // res, send {data: "Hello World"}
+    }
+})
+
+
+// const server=http.createServer((req,res)=>{
+//     try{
+//         res.writeHead(200,{'Content-Type': 'application/json'})
+//     //write to response header
+//     //200 status code
+//     // content type is application / json
+//     res.end(JSON.stringify({
+//         data: 'Query Successful! 123'
+//     }))
+//     // res, send {data: "Hello World"}
+//     }
+//     catch(err){
+//         res.writeHead(500,{'Content-Type': 'application/json'})
+//     //write to response header
+//     //200 status code
+//     // content type is application / json
+//     res.end(JSON.stringify({
+//         data: 'Error'
+//     }))
+//     // res, send {data: "Hello World"}
+//     }
+// })
+
+server.listen(3001,()=>{
+    console.log("Listen on port 3001")
+})
